@@ -24,12 +24,10 @@ public class AdvancedArmorBarMain implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-		ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(new ArmorIconLoader());
+		ResourceManagerHelper.get(ResourceType.CLIENT_RESOURCES).registerReloadListener(new ArmorIconLoader());
 
 		HotbarAPI.registerStatusBarRenderer(new AdvancedArmorBar.AdvancedArmorBarRenderer());
 		HotbarAPI.registerStatusBarLogic(new AdvancedArmorBar.AdvancedArmorBarLogic());
-
-
 	}
 
 	public static Identifier of(String text) {
