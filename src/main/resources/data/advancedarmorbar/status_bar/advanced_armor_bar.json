@@ -1,0 +1,11 @@
+{
+  "after": [
+    "minecraft:health"
+  ],
+  "replace": "minecraft:armor",
+  "texture": "advancedarmorbar:textures/gui/armor_empty.png",
+  "position": "LEFT",
+  "direction": "L2R",
+  "renderer": "advancedarmorbar:advanced_armor_renderer",
+  "logic": "advancedarmorbar:advanced_armor_logic"
+}

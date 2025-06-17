@@ -1,0 +1,6 @@
+{
+    "texture": "advancedarmorbar:textures/gui/materials/turtle.png",
+    "items": [
+        "minecraft:turtle_helmet"
+    ]
+}

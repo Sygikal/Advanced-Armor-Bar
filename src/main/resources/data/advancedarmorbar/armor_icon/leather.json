@@ -1,0 +1,9 @@
+{
+    "texture": "advancedarmorbar:textures/gui/materials/leather.png",
+    "items": [
+        "minecraft:leather_helmet",
+        "minecraft:leather_chestplate",
+        "minecraft:leather_leggings",
+        "minecraft:leather_boots"
+    ]
+}

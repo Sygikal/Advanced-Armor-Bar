@@ -1,0 +1,12 @@
+{
+    "required": true,
+    "package": "dev.sygii.advancedarmorbar.mixin",
+    "compatibilityLevel": "JAVA_17",
+    "mixins": [
+        "EntityAttributeInstanceMixin",
+        "EntityAttributesMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}
