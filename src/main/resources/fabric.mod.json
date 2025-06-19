@@ -28,7 +28,8 @@
         "fabricloader": ">=0.16.14",
         "minecraft": "${mcdep}",
         "java": "${javadep}",
-        "fabric-api": "*"
+        "fabric-api": "*",
+        "hotbarapi": ">=1.3.0"
     },
     "suggests": {
         "another-mod": "*"
