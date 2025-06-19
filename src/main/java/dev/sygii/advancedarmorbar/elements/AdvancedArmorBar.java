@@ -24,6 +24,7 @@ import net.minecraft.util.math.MathHelper;
 import dev.sygii.hotbarapi.elements.StatusBarRenderer;
 import dev.sygii.hotbarapi.elements.StatusBarLogic;
 import net.minecraft.world.gen.surfacebuilder.MaterialRules;
+import org.lwjgl.opengl.GL11;
 
 import java.util.*;
 
@@ -32,41 +33,46 @@ public class AdvancedArmorBar {
         private static final Identifier TOUGHESS_UNDERLAY = AdvancedArmorBarMain.sprite("toughness_underlay");
         private static final Identifier EMPTY = AdvancedArmorBarMain.sprite("armor_empty");
         private static final Identifier ID = AdvancedArmorBarMain.of("advanced_armor_renderer");
+        public float height = 10;
 
         public AdvancedArmorBarRenderer() {
             super(ID, TOUGHESS_UNDERLAY, StatusBarRenderer.Position.LEFT, StatusBarRenderer.Direction.L2R);
         }
 
         @Override
+        public float getHeight(MinecraftClient client, PlayerEntity playerEntity) {
+            return 10 + height;
+        }
+
+        @Override
         public void render(MinecraftClient client, DrawContext context, PlayerEntity playerEntity, int x, int y, StatusBarLogic logic) {
             float toughness = (float) playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
-            float armor = (float) playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR);
+            //float armor = (float) playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR);
 
-            float maxArmor = (float) (Math.ceil(armor/20.0) * 20);
+            //float maxArmor = (float) (Math.ceil(armor/20.0) * 20);
             float maxTough = (float) (Math.ceil(toughness/20.0) * 20);
 
-            int realArmor = MathHelper.ceil(armor);
+           // int realArmor = MathHelper.ceil(armor);
             int realTough = MathHelper.ceil(toughness);
 
-            float combinedMax = Math.max(maxArmor, maxTough);
-            float realMax = Math.max(realArmor, realTough);
+            //float combinedMax = Math.max(maxArmor, maxTough);
+            //float realMax = Math.max(realArmor, realTough);
             int scale = 10;
 
-            float f2 = Math.max((float)combinedMax, (float) Math.max((float)MathHelper.ceil(armor),  (float)MathHelper.ceil(toughness)));
+            /*float f2 = Math.max((float)combinedMax, (float) Math.max((float)MathHelper.ceil(armor),  (float)MathHelper.ceil(toughness)));
             //int p2 = MathHelper.ceil(playerEntity.getAbsorptionAmount());
-            int q2 = MathHelper.ceil((f2 /*+ (float)p2*/) / 2.0F / 10.0F);
-            int lines = Math.max(10 - (q2 - 2), 3);
+            int q2 = MathHelper.ceil((f2 /*+ (float)p2//) / 2.0F / 10.0F);
+            int lines = Math.max(10 - (q2 - 2), 3);*/
 
-            //System.out.println(armor);
-            int mmmaxxx = MathHelper.ceil((double)combinedMax / (double)2.0F);
+            /*int mmmaxxx = MathHelper.ceil((double)combinedMax / (double)2.0F);
 
             int sexscale = (int) (combinedMax / 2);
-            float apparition = combinedMax / (float)(sexscale);
+            float apparition = combinedMax / (float)(sexscale);*/
 
-            LinkedHashMap pointsMap = new LinkedHashMap();
-            Map<Identifier, Integer> pointsMap2 = new LinkedHashMap();
             List<ArmorSegment> segments = new ArrayList<>();
-            int totalPoints = this.getArmorPoints(playerEntity, (Map<EquipmentSlot, Integer>)pointsMap, segments);
+            int totalPoints = this.getArmorPoints(playerEntity, segments);
+
+            //Sorting
             Collections.sort(segments, new Comparator<ArmorSegment>(){
                 public int compare(ArmorSegment o1, ArmorSegment o2){
                     if(o1.getPoints() == o2.getPoints())
@@ -75,22 +81,35 @@ public class AdvancedArmorBar {
                 }
             });
             Collections.reverse(segments);
-            //System.out.println(pointsMap);
-           /* if (totalPoints <= 0) {
-                return;
-            }*/
 
-            for(int m = mmmaxxx - 1; m >= 0; --m) {
+
+            float maxArmor2 = (float) (Math.ceil(totalPoints/20.0) * 20);
+            float combinedMax2 = Math.max(maxArmor2, maxTough);
+            float f22 = Math.max((float)combinedMax2, (float) Math.max((float)MathHelper.ceil(totalPoints),  (float)MathHelper.ceil(toughness)));
+            int q22 = MathHelper.ceil((f22) / 2.0F / 10.0F);
+            int lines2 = Math.max(10 - (q22 - 2), 3);
+
+            //Switch maxArmor2 with totalPoints to cull after 1st row
+            int max2 = MathHelper.ceil((double)combinedMax2 / (double)2.0F);
+
+            int sexscale2 = (int) (combinedMax2 / 2);
+            float apparition2 = combinedMax2 / (float)(sexscale2);
+
+            for(int m = max2 - 1; m >= 0; --m) {
                 int n = m / scale;
                 int o = m % scale;
                 int p = x + (getDirection().equals(Direction.L2R) ? (getPosition().equals(Position.RIGHT) ? -72 : 0) + o * 8 : (getPosition().equals(Position.LEFT) ? 72 : 0) + -(o * 8));
-                int q = y - n * lines;
+                int q = y - n * lines2;
 
 
-                float prevasd = (float)m * apparition;
-                float asd = (float)(m + 1) * apparition;
-                float sex = asd - apparition / 2.0F;
+                float prevasd = (float)m * apparition2;
+                float asd = (float)(m + 1) * apparition2;
+                float sex = asd - apparition2 / 2.0F;
 
+                float level = n+1;
+                float armorLevel = level + 0.5f;
+
+                context.getMatrices().translate(0, 0, -armorLevel);
                 if (realTough > sex) {
                     boolean bl = realTough == asd;
                     boolean bl2 = (m+1) % 10 == 0;
@@ -102,159 +121,49 @@ public class AdvancedArmorBar {
                 }
 
                 context.drawTexture(EMPTY, p, q, 0.0F, 0.0F, 9, 9, 9, 9);
+                context.getMatrices().translate(0, 0, armorLevel);
             }
 
 
             int donePoints = 0;
-            int asdd = 0;
             for (ArmorSegment segment : segments) {
                 for (int i = segment.getPoints() - 1; i >= 0; --i) {
                     int n = (donePoints + i) / (scale * 2);
                     int o = (donePoints + i)  % (scale * 2);
                     int p = x + (getDirection().equals(Direction.L2R) ? (getPosition().equals(Position.RIGHT) ? -72 : 0) + o * 4 : (getPosition().equals(Position.LEFT) ? 72 : 0) + -(o * 4));
-                    int q = y - n * lines;
+                    int q = y - n * lines2;
                     boolean firstHalf = (donePoints + i) % 2 == 0;
                     boolean lastHalf = (donePoints + i) % 2 == 1;
-                    if (segment.isEnchanted()) {
-                        context.getMatrices().translate(0, 0, 2);
-                    }
-                    if (firstHalf) {
-                        /*context.getMatrices().translate(0, 0, -2);
+                    float level = n+1;
+                    float enchantLevel = level + 0.6f;
+                    float armorLevel = level + 0.5f;
+
+                    //For only render armor under used
+                    /*if (firstHalf) {
+                        context.getMatrices().translate(0, 0, -armorLevel);
                         context.drawTexture(EMPTY, p, q,0, 0.0F, 9, 9, 9, 9);
-                        context.getMatrices().translate(0, 0, 2);*/
-                    }
-                    //context.drawTexture(EMPTY, p, q, lastHalf ? 4.0F : 0, 0.0F, lastHalf || firstHalf ? 5 : 9, 9, 9, 9);
+                        context.getMatrices().translate(0, 0, armorLevel);
+                    }*/
+
                     if (segment.getDyeColor() != -1) {
                         int hex = segment.getDyeColor();
                         RenderSystem.setShaderColor(ColorHelper.Argb.getRed(hex) / 255.0F, ColorHelper.Argb.getGreen(hex) / 255.0F, ColorHelper.Argb.getBlue(hex) / 255.0F, 1.0f);
                     }
+
+                    context.getMatrices().translate(0, 0, -level);
                     context.drawTexture(segment.getIcon().getTexture(), p, q, lastHalf ? 4.0F : 0, 0.0F, lastHalf || firstHalf ? 5 : 9, 9, 9, 9);
-                    //RenderSystem.setShaderColor(ColorHelper.Argb.getRed(-1) / 255.0F, ColorHelper.Argb.getGreen(-1) / 255.0F, ColorHelper.Argb.getBlue(-1) / 255.0F, ColorHelper.Argb.getAlpha(-1) / 255.0F);
                     if (segment.isEnchanted()) {
-                        //this.drawTexturedGlintRect(context, client, );
-                        this.drawTexturedGlintRect(context, client, p, q,  lastHalf ? 4 : 0, 0, lastHalf || firstHalf ? 5 : 9, 9);
-                        context.getMatrices().translate(0, 0, -2);
+                        this.drawTexturedGlintRect(context, client, p, q, lastHalf ? 4 : 0, 0, lastHalf || firstHalf ? 5 : 9, 9);
                     }
+                    context.getMatrices().translate(0, 0, level);
+
                     RenderSystem.setShaderColor((float)1.0f, (float)1.0f, (float)1.0f, (float)1.0f);
                 }
                 donePoints += segment.getPoints();
-                asdd++;
             }
 
-            Map<Integer, ArmorMaterial> valueMap = new LinkedHashMap<>();
-
-            /*int sss = 0;
-            int totalArmor = 0;
-            for (EquipmentSlot slot : EquipmentSlot.values()) {
-                ItemStack stack = playerEntity.getEquippedStack(slot);
-                Multimap<EntityAttribute, EntityAttributeModifier> attributeMap = stack.getAttributeModifiers(slot);
-                if (!stack.isEmpty() && stack.getItem() instanceof ArmorItem) {
-                    ArmorMaterial material = ((ArmorItem) stack.getItem()).getMaterial();
-                    ArmorItem.Type type = ((ArmorItem) stack.getItem()).getType();
-
-                    //type.getName()
-                    context.drawText(client.inGameHud.getTextRenderer(), Text.literal(""+material.getName() + " | " + material.getProtection(type)), 100,  100 + (sss * 9), -1, true);
-                    int prot = material.getProtection(type);
-                    totalArmor += prot;
-                    for (int i = totalArmor; i>= totalArmor - prot; --i) {
-                        valueMap.put(i, material);
-                    }
-                    /*int i = material.getProtection(type);
-                    int j = (int) material.getToughness();
-                    s = "§a+" + i;
-                    s1 = (j > 0 ? "§b+" : "§b") + j;//
-
-                }
-               // double value = ((EntityAttributeModifier)attributeMap.asMap().get(EntityAttributes.GENERIC_ARMOR)).getValue();
-                //context.drawText(client.inGameHud.getTextRenderer(), Text.literal(""+(value)), 100, sss * 9, -1, true);
-                //Multimap asd = stack.getAttributeModifiers(slot);
-                //asd.get(EntityAttributes.GENERIC_ARMOR);
-                sss++;
-            }*/
-
-            /*int asasd = 0;
-            for (Map.Entry<Integer, ArmorMaterial> enty : valueMap.entrySet()) {
-                context.drawText(client.inGameHud.getTextRenderer(), Text.literal(""+(enty.getKey() + " | " + enty.getValue())), 200, 100 + (asasd*9), -1, true);
-                asasd++;
-            }*/
-
-            /*for(int m = mmmaxxx - 1; m >= 0; --m) {
-                int n = m / scale;
-                int o = m % scale;
-                int p = x + (getDirection().equals(Direction.L2R) ? (getPosition().equals(Position.RIGHT) ? -72 : 0) + o * 8 : (getPosition().equals(Position.LEFT) ? 72 : 0) + -(o * 8));
-                int pText = x + (getDirection().equals(Direction.L2R) ? (getPosition().equals(Position.RIGHT) ? -72 : 0) + o * 27 : (getPosition().equals(Position.LEFT) ? 72 : 0) + -(o * 27));
-                int q = y - n * lines;
-
-
-
-                float prevasd = (float)m * apparition;
-                float asd = (float)(m + 1) * apparition;
-                float sex = asd - apparition / 2.0F;
-
-                if (realTough > sex) {
-                    boolean bl = realTough == asd;
-                    boolean bl2 = (m+1) % 10 == 0;
-                    context.drawTexture(TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, (bl || bl2) ? 11 : 10, 11, 44, 11);
-                }
-
-                if (realTough > prevasd && realTough <= sex) {
-                    context.drawTexture(TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, 6, 11, 44, 11);
-                }
-
-                context.drawTexture(EMPTY, p, q, 0.0F, 0.0F, 9, 9, 9, 9);
-                context.drawText(client.inGameHud.getTextRenderer(), Text.literal(""+(realArmor)), pText, q - 20, -1, true);
-
-                ArmorMaterial se = valueMap.get((m + 1) * 2);
-                if (se != null) {
-                    if (realArmor > sex) {
-                        context.drawTexture(AdvancedArmorBarMain.sprite("materials/" + se.getName().toLowerCase()), p, q, 0.0F, 0.0F, 9, 9, 9, 9);
-                    }
-
-                    if (realArmor > prevasd && realArmor <= sex) {
-                        context.drawTexture(AdvancedArmorBarMain.sprite("materials/" + se.getName().toLowerCase()), p, q, 0.0F, 0.0F, 5, 9, 9, 9);
-                    }
-                }
-            }*/
+            this.height = (q22 - 1) * lines2;
         }
-
-
-        /*@Override
-        public void render(MinecraftClient client, DrawContext context, PlayerEntity playerEntity, int x, int y, StatusBarLogic logic) {
-            float toughness = (float) playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
-            float armor = (float) playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR);
-
-            int max =
-            int scale = 10;
-            float apparition = max / (float)scale;
-
-            //addZOffset(context, 2);
-            for(int w = 0; w < scale; ++w) {
-                int xPosition = x + (this.getDirection().equals(Direction.L2R) ? (this.getPosition().equals(Position.RIGHT) ? -72 : 0) + w * 8 : (this.getPosition().equals(Position.LEFT) ? 72 : 0) + -(w * 8));
-                //context.drawTexture(this.getTexture(), xPosition, y, 0.0F, 0.0F, 9, 9, 27, 9);
-                float prevasd = (float)w * apparition;
-                float asd = (float)(w + 1) * apparition;
-                float sex = asd - apparition / 2.0F;
-                //addZOffset(context, -2);
-                //drawTexturedGlintRect(context, client,x, y, x+9, y+9, 256, 9);
-                //addZOffset(context, 2);s
-                /*if (w == 0) {
-                    context.drawTexture(this.getTexture(), xPosition -1, y -1, 0.0F, 0.0F, 11, 11, 44, 11);
-                }/
-
-                if (current > sex) {
-                    context.drawTexture(this.getTexture(), xPosition -1, y -1, 0.0F, 0.0F, 11, 11, 44, 11);
-                }
-
-                if (current > prevasd && current <= sex) {
-                    context.drawTexture(this.getTexture(), xPosition- 1, y -1, 11.0F, 0.0F, 11, 11, 44, 11);
-                }
-                //drawTexturedGlintRect(context, client,x, y, x+9, y+9, 256, 256);
-                //addZOffset(context, -2);
-            }
-            //drawTexturedGlintRect(context, client,x, y, x+90, y+9, 256, 256);
-            //drawTexturedGlintRect(context, client, x, y, x+90, 0, 0, 9);
-            //addZOffset(context, -2);
-        }*/
 
         /*private void drawTexturedGlintRect(DrawContext context, MinecraftClient client, int x, int y, int u, int v, int width, int height) {
             float intensity = client.options.getGlintStrength().getValue().floatValue()
@@ -292,18 +201,15 @@ public class AdvancedArmorBar {
 
         private static final DefaultAttributeContainer FALLBACK_ARMOR = DefaultAttributeContainer.builder().add(EntityAttributes.GENERIC_ARMOR).build();
         private static final DefaultAttributeContainer FALLBACK_TOUGHNESS = DefaultAttributeContainer.builder().add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).build();
+        private static final int ARMOR_CAP = 200;
 
-        private int getArmorPoints(PlayerEntity player, Map<EquipmentSlot, Integer> pointsMap, List<ArmorSegment> segments) {
+        private int getArmorPoints(PlayerEntity player, List<ArmorSegment> segments) {
             AttributeContainer attributes = new AttributeContainer(FALLBACK_ARMOR);
             EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.GENERIC_ARMOR);
             if (armor == null) {
                 return 0;
             }
-            int displayedArmorCap = /*ArmorChroma.config.getDisplayedArmorCap()*/ 100;
             int attrLast = (int)((EntityAttributeInstanceAccessor)armor).getUnclampedValue();
-            /*if (ArmorChroma.config.reverse()) {
-                Util.reverse((Object[])slots);
-            }*/
             int totalPoints = 0;
             for (EquipmentSlot slot : EquipmentSlot.values()) {
                 ItemStack stack = player.getEquippedStack(slot);
@@ -311,11 +217,10 @@ public class AdvancedArmorBar {
                     //ArmorMaterial material = ((ArmorItem) stack.getItem()).getMaterial();
                     //ArmorItem.Type type = ((ArmorItem) stack.getItem()).getType();
                 attributes.addTemporaryModifiers(stack.getAttributeModifiers(slot));
-                int attrNext = Math.min((int) displayedArmorCap, (int) ((int) ((EntityAttributeInstanceAccessor) armor).getUnclampedValue()));
+                int attrNext = Math.min((int) ARMOR_CAP, (int) ((int) ((EntityAttributeInstanceAccessor) armor).getUnclampedValue()));
                 int points = attrNext - attrLast;
                 attrLast = attrNext;
                 if (points <= 0) continue;
-                pointsMap.put(slot, points);
                 int dyeColor = -1;
                 if (stack.getItem() instanceof DyeableArmorItem dye) {
                     dyeColor = dye.getColor(stack);
@@ -326,8 +231,6 @@ public class AdvancedArmorBar {
                         segments.add(new ArmorSegment(icon, points, dyeColor, stack.hasGlint()));
                     }
                 }
-                    //pointsMap2.put(material, points);
-                //}
             }
             /*if (totalPoints != (int) player.getAttributeValue(EntityAttributes.GENERIC_ARMOR)) {
                 int remaining = (int) (player.getAttributeValue(EntityAttributes.GENERIC_ARMOR)) - totalPoints;
@@ -335,40 +238,6 @@ public class AdvancedArmorBar {
            }*/
             return attrLast;
         }
-
-        /*private int getToughnessPoints(PlayerEntity player, Map<EquipmentSlot, Integer> pointsMap, List<ArmorSegment> segments) {
-            AttributeContainer attributes = new AttributeContainer(FALLBACK_TOUGHNESS);
-            EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
-            if (armor == null) {
-                return 0;
-            }
-            int displayedArmorCap = /*ArmorChroma.config.getDisplayedArmorCap()/ 100;
-            int attrLast = (int)((EntityAttributeInstanceAccessor)armor).getUnclampedValue();
-            for (EquipmentSlot slot : EquipmentSlot.values()) {
-                ItemStack stack = player.getEquippedStack(slot);
-                //if (!stack.isEmpty() && stack.getItem() instanceof ArmorItem) {
-                //ArmorMaterial material = ((ArmorItem) stack.getItem()).getMaterial();
-                //ArmorItem.Type type = ((ArmorItem) stack.getItem()).getType();
-                attributes.addTemporaryModifiers(stack.getAttributeModifiers(slot));
-                int attrNext = Math.min((int) displayedArmorCap, (int) ((int) ((EntityAttributeInstanceAccessor) armor).getUnclampedValue()));
-                int points = attrNext - attrLast;
-                attrLast = attrNext;
-                if (points <= 0) continue;
-                pointsMap.put(slot, points);
-                int dyeColor = -1;
-                if (stack.getItem() instanceof DyeableArmorItem dye) {
-                    dyeColor = dye.getColor(stack);
-                }
-                for (ArmorIcon icon : AdvancedArmorBarMain.armorIcons) {
-                    if (icon.getItems().contains(stack.getItem())) {
-                        segments.add(new ArmorSegment(icon, points, dyeColor, stack.hasGlint()));
-                    }
-                }
-                //pointsMap2.put(material, points);
-                //}
-            }
-            return attrLast;
-        }*/
     }
 
     public static class AdvancedArmorBarLogic extends StatusBarLogic {
