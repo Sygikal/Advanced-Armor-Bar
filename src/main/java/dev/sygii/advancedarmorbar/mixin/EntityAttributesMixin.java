@@ -16,7 +16,7 @@ public class EntityAttributesMixin {
 			index = 3
 	)
 	private static double modifyMax(double original) {
-		return 80.0;
+		return 1024.0;
 	}
 
 	@ModifyArg(
@@ -26,6 +26,6 @@ public class EntityAttributesMixin {
 			index = 3
 	)
 	private static double modifyMax2(double original) {
-		return 80.0;
+		return 1024.0;
 	}
 }
