@@ -1,0 +1,4 @@
+accessWidener v2 named
+
+accessible field net/minecraft/client/render/GameRenderer overlayRenderer Lnet/minecraft/client/gui/hud/InGameOverlayRenderer;
+accessible field net/minecraft/client/gui/hud/InGameOverlayRenderer vertexConsumers Lnet/minecraft/client/render/VertexConsumerProvider;
