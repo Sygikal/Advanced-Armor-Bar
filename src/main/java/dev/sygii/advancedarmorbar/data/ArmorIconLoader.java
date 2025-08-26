@@ -31,6 +31,7 @@ public class ArmorIconLoader implements SimpleSynchronousResourceReloadListener 
 
     @Override
     public void reload(ResourceManager manager) {
+        AdvancedArmorBarMain.armorIcons.clear();
         manager.findResources("armor_icon", id -> id.getPath().endsWith(".json")).forEach((id, resourceRef) -> {
             try {
                 InputStream stream = null;
