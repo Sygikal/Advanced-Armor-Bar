@@ -30,6 +30,7 @@ import net.minecraft.item.ArmorMaterial;
 import net.minecraft.item.DyeableArmorItem;
 //?}
 import net.minecraft.item.ItemStack;
+import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.Util;
@@ -48,6 +49,14 @@ import java.util.List;
 import java.util.function.Function;
 
 public class AdvancedArmorBar {
+    //? if =1.20.1 {
+    public static EntityAttribute TOUGH = EntityAttributes.GENERIC_ARMOR_TOUGHNESS;
+    public static EntityAttribute ARMOR = EntityAttributes.GENERIC_ARMOR;
+    //?} else {
+    /*public static RegistryEntry<EntityAttribute> TOUGH = EntityAttributes.ARMOR_TOUGHNESS;
+    public static RegistryEntry<EntityAttribute> ARMOR = EntityAttributes.ARMOR;
+    *///?}
+
     public static class AdvancedArmorBarRenderer extends StatusBarRenderer {
         private static final Identifier TOUGHESS_UNDERLAY = AdvancedArmorBarMain.sprite("toughness_underlay");
         private static final Identifier EMPTY = AdvancedArmorBarMain.sprite("armor_empty");
@@ -64,6 +73,14 @@ public class AdvancedArmorBar {
             super(ID, TOUGHESS_UNDERLAY, StatusBarRenderer.Position.LEFT, StatusBarRenderer.Direction.L2R);
         }
 
+        public void draw(DrawContext context, Identifier texture, int x, int y, float u, float v, int width, int height, int textureWidth, int textureHeight) {
+            //? if =1.20.1 {
+            context.drawTexture(texture, x, y, u, v, width, height, textureWidth, textureHeight);
+            //?} else {
+            /*context.drawTexture(LAYER, texture, x, y, u, v, width, height, textureWidth, textureHeight);
+             *///?}
+        }
+
         @Override
         public float getHeight(MinecraftClient client, PlayerEntity playerEntity) {
             return 10 + height;
@@ -71,13 +88,9 @@ public class AdvancedArmorBar {
 
         @Override
         public void render(MinecraftClient client, DrawContext context, PlayerEntity playerEntity, int x, int y, StatusBarLogic logic) {
-            //? if =1.20.1 {
-            float toughness = (float) playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS);
-            //?} else {
-            /*float toughness = (float) playerEntity.getAttributeValue(EntityAttributes.ARMOR_TOUGHNESS);
-            *///?}
+            float toughness = (float) playerEntity.getAttributeValue(TOUGH);
 
-            //float armor = (float) playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR);
+            float armor = (float) playerEntity.getAttributeValue(ARMOR);
 
             //float maxArmor = (float) (Math.ceil(armor/20.0) * 20);
             float maxTough = (float) (Math.ceil(toughness/20.0) * 20);
@@ -101,6 +114,10 @@ public class AdvancedArmorBar {
 
             List<ArmorSegment> segments = new ArrayList<>();
             int totalPoints = this.getArmorPoints(playerEntity, segments);
+
+            if (totalPoints < armor) {
+                totalPoints += (int) (armor - totalPoints);
+            }
 
             //Sorting
             Collections.sort(segments, new Comparator<ArmorSegment>(){
@@ -138,32 +155,20 @@ public class AdvancedArmorBar {
                 float level = n+1;
                 float armorLevel = level + 0.5f;
 
-                //?if <=1.21.5
+                //? if <=1.21.5
                 context.getMatrices().translate(0, 0, -armorLevel);
                 if (realTough > sex) {
                     boolean bl = realTough == asd;
                     boolean bl2 = (m+1) % 10 == 0;
-                    //? if =1.20.1 {
-                    context.drawTexture(TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, (bl || bl2) ? 11 : 10, 11, 44, 11);
-                    //?} else {
-                    /*context.drawTexture(LAYER, TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, (bl || bl2) ? 11 : 10, 11, 44, 11);
-                     *///?}
+                    draw(context, TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, (bl || bl2) ? 11 : 10, 11, 44, 11);
                 }
 
                 if (realTough > prevasd && realTough <= sex) {
-                    //? if =1.20.1 {
-                    context.drawTexture(TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, 6, 11, 44, 11);
-                    //?} else {
-                    /*context.drawTexture(LAYER, TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, 6, 11, 44, 11);
-                     *///?}
+                    draw(context, TOUGHESS_UNDERLAY, p - 1, q - 1, 0.0F, 0.0F, 6, 11, 44, 11);
                 }
 
-                //? if =1.20.1 {
-                context.drawTexture(EMPTY, p, q, 0.0F, 0.0F, 9, 9, 9, 9);
-                //?} else {
-                /*context.drawTexture(LAYER, EMPTY, p, q, 0.0F, 0.0F, 9, 9, 9, 9);
-                 *///?}
-                //?if <=1.21.5
+                draw(context, EMPTY, p, q, 0.0F, 0.0F, 9, 9, 9, 9);
+                //? if <=1.21.5
                 context.getMatrices().translate(0, 0, armorLevel);
             }
 
@@ -195,11 +200,7 @@ public class AdvancedArmorBar {
                     //? if <=1.21.5
                     context.getMatrices().translate(0, 0, -level);
 
-                    //? if =1.20.1 {
-                    context.drawTexture(segment.getIcon().getTexture(), p, q, lastHalf ? 4.0F : 0, 0.0F, lastHalf || firstHalf ? 5 : 9, 9, 9, 9);
-                    //?} else {
-                    /*context.drawTexture(LAYER, segment.getIcon().getTexture(), p, q, lastHalf ? 4.0F : 0, 0.0F, lastHalf || firstHalf ? 5 : 9, 9, 9, 9);
-                    *///?}
+                    draw(context, segment.getIcon().getTexture(), p, q, lastHalf ? 4.0F : 0, 0.0F, lastHalf || firstHalf ? 5 : 9, 9, 9, 9);
 
                     if (segment.isEnchanted()) {
                         //? if <=1.21.5 {
@@ -282,8 +283,8 @@ public class AdvancedArmorBar {
         }
 
         //? if =1.20.1 {
-        private static final DefaultAttributeContainer FALLBACK_ARMOR = DefaultAttributeContainer.builder().add(EntityAttributes.GENERIC_ARMOR).build();
-        private static final DefaultAttributeContainer FALLBACK_TOUGHNESS = DefaultAttributeContainer.builder().add(EntityAttributes.GENERIC_ARMOR_TOUGHNESS).build();
+        private static final DefaultAttributeContainer FALLBACK_ARMOR = DefaultAttributeContainer.builder().add(ARMOR).build();
+        private static final DefaultAttributeContainer FALLBACK_TOUGHNESS = DefaultAttributeContainer.builder().add(TOUGH).build();
         //?} else {
         /*private static final DefaultAttributeContainer FALLBACK_ARMOR = DefaultAttributeContainer.builder().add(EntityAttributes.ARMOR).build();
         *///?}
@@ -291,11 +292,7 @@ public class AdvancedArmorBar {
 
         private int getArmorPoints(PlayerEntity player, List<ArmorSegment> segments) {
             AttributeContainer attributes = new AttributeContainer(FALLBACK_ARMOR);
-            //? if =1.20.1 {
-            EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.GENERIC_ARMOR);
-            //?} else {
-            /*EntityAttributeInstance armor = attributes.getCustomInstance(EntityAttributes.ARMOR);
-            *///?}
+            EntityAttributeInstance armor = attributes.getCustomInstance(ARMOR);
             if (armor == null) {
                 return 0;
             }
@@ -313,8 +310,8 @@ public class AdvancedArmorBar {
                 int points = attrNext - attrLast;
                 attrLast = attrNext;
                 //?} else {
-                //int points = getDefense(stack, slot);
-                //?}
+                /*int points = getDefense(stack, slot);
+                *///?}
                 if (points <= 0) continue;
                 //? if =1.20.1 {
                 int dyeColor = -1;
@@ -332,15 +329,15 @@ public class AdvancedArmorBar {
                     }
                 }
             }
-            /*if (totalPoints != (int) player.getAttributeValue(EntityAttributes.GENERIC_ARMOR)) {
-                int remaining = (int) (player.getAttributeValue(EntityAttributes.GENERIC_ARMOR)) - totalPoints;
+            if (totalPoints != (int) player.getAttributeValue(ARMOR)) {
+                int remaining = (int) (player.getAttributeValue(ARMOR)) - totalPoints;
                 segments.add(new ArmorSegment(new ArmorIcon(Identifier.of("aab", "default"), AdvancedArmorBarMain.sprite("materials/iron"), null), remaining, -1, false));
-           }*/
+            }
             //return attrLast;
             return totalPoints;
         }
 
-        //if >=1.21.5 {
+        //? if >=1.21.5 {
         /*private static int getDefense(ItemStack itemStack, EquipmentSlot slot) {
             AttributeModifiersComponent modifier = itemStack.getOrDefault(DataComponentTypes.ATTRIBUTE_MODIFIERS, AttributeModifiersComponent.DEFAULT);
 
@@ -364,11 +361,7 @@ public class AdvancedArmorBar {
 
         @Override
         public boolean isVisible(MinecraftClient client, PlayerEntity playerEntity) {
-            //? if =1.20.1 {
-            return playerEntity.getArmor() > 0 || MathHelper.ceil(playerEntity.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS)) > 0;
-            //?} else {
-            /*return playerEntity.getArmor() > 0 || MathHelper.ceil(playerEntity.getAttributeValue(EntityAttributes.ARMOR_TOUGHNESS)) > 0;
-            *///?}
+            return playerEntity.getArmor() > 0 || MathHelper.ceil(playerEntity.getAttributeValue(TOUGH)) > 0;
         }
     }
 }
