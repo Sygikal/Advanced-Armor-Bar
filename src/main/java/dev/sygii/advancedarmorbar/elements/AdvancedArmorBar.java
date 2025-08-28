@@ -322,16 +322,22 @@ public class AdvancedArmorBar {
                 /*int dyeColor = DyedColorComponent.getColor(stack, -1);
                 *///?}
 
+                boolean found = false;
                 totalPoints += points;
                 for (ArmorIcon icon : AdvancedArmorBarMain.armorIcons) {
                     if (icon.getItems().contains(stack.getItem())) {
                         segments.add(new ArmorSegment(icon, points, dyeColor, stack.hasGlint()));
+                        found = true;
                     }
                 }
+                if (!found) {
+                    segments.add(new ArmorSegment(new ArmorIcon(AdvancedArmorBarMain.of("default"), AdvancedArmorBarMain.sprite("materials/iron"), null), points, dyeColor, stack.hasGlint()));
+                }
             }
-            if (totalPoints != (int) player.getAttributeValue(ARMOR)) {
+            if (totalPoints < (int) player.getAttributeValue(ARMOR)) {
                 int remaining = (int) (player.getAttributeValue(ARMOR)) - totalPoints;
-                segments.add(new ArmorSegment(new ArmorIcon(Identifier.of("aab", "default"), AdvancedArmorBarMain.sprite("materials/iron"), null), remaining, -1, false));
+                segments.add(new ArmorSegment(new ArmorIcon(AdvancedArmorBarMain.of("attribute"), AdvancedArmorBarMain.sprite("materials/attribute"), null), remaining, -1, false));
+                //totalPoints += remaining;
             }
             //return attrLast;
             return totalPoints;
