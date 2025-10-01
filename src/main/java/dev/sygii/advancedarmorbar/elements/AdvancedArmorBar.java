@@ -60,7 +60,7 @@ public class AdvancedArmorBar {
     public static class AdvancedArmorBarRenderer extends StatusBarRenderer {
         private static final Identifier TOUGHESS_UNDERLAY = AdvancedArmorBarMain.sprite("toughness_underlay");
         private static final Identifier EMPTY = AdvancedArmorBarMain.sprite("armor_empty");
-        private static final Identifier ID = AdvancedArmorBarMain.of("advanced_armor_renderer");
+        public static final Identifier ID = AdvancedArmorBarMain.of("advanced_armor_renderer");
         public float height = 10;
 
         //? if >=1.21.6 {
@@ -155,8 +155,10 @@ public class AdvancedArmorBar {
                 float level = n+1;
                 float armorLevel = level + 0.5f;
 
-                //? if <=1.21.5
+                //? if <=1.21.5 {
+                context.getMatrices().push();
                 context.getMatrices().translate(0, 0, -armorLevel);
+                //?}
                 if (realTough > sex) {
                     boolean bl = realTough == asd;
                     boolean bl2 = (m+1) % 10 == 0;
@@ -168,8 +170,10 @@ public class AdvancedArmorBar {
                 }
 
                 draw(context, EMPTY, p, q, 0.0F, 0.0F, 9, 9, 9, 9);
-                //? if <=1.21.5
+                //? if <=1.21.5 {
                 context.getMatrices().translate(0, 0, armorLevel);
+                context.getMatrices().pop();
+                //?}
             }
 
             int donePoints = 0;
@@ -268,7 +272,11 @@ public class AdvancedArmorBar {
         /*private void drawTexturedGlintRect(DrawContext context, MinecraftClient client, int x, int y, float u, float v, int width, int height) {
             float intensity = ((Double)client.options.getGlintStrength().getValue()).floatValue() * 1.5f;
             int color = ColorHelper.getWhite(MathHelper.clamp(intensity, 0, 1));
+            //? if >=1.21.9 {
+            /^context.drawTexture(RenderPipelines.GLINT, ItemRenderer.ITEM_ENCHANTMENT_GLINT, x, y, u, v, width, height, 256, 256, color);
+            ^///?} else {
             context.drawTexture(id -> RenderLayer.getGlint(), ItemRenderer.ITEM_ENCHANTMENT_GLINT, x, y, u, v, width, height, 256, 256, color);
+            //?}
         }
         *///?}
 
@@ -359,7 +367,7 @@ public class AdvancedArmorBar {
 
     public static class AdvancedArmorBarLogic extends StatusBarLogic {
 
-        private static final Identifier ID = AdvancedArmorBarMain.of("advanced_armor_logic");
+        public static final Identifier ID = AdvancedArmorBarMain.of("advanced_armor_logic");
 
         public AdvancedArmorBarLogic() {
             super(ID, (ent) -> 0, (ent) -> 0);
